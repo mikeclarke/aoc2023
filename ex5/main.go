@@ -49,6 +49,42 @@ func applyRules(rules [][][]int, seed int) int {
 	return value
 }
 
+func invertedApplyRules(rules [][][]int, seed int) int {
+	value := seed
+	//Iterate the list of rules
+	for _, rule := range rules {
+		//Iterate the list of rule chunks
+		for _, chunk := range rule {
+			//If the seed is within the range of the chunk
+			if value >= chunk[0] && value < chunk[0]+chunk[2] {
+				// Update the seed value
+				value = (value + (chunk[1] - chunk[0]))
+				break
+			}
+		}
+	}
+	return value
+}
+
+// Write a function that iterates over an array of pairs of integers and returns true if an integer is within the range of any pair
+func inRange(values [][]int, value int) bool {
+	for _, pair := range values {
+		if value >= pair[0] && value < pair[0]+pair[1] {
+			return true
+		}
+	}
+	return false
+}
+
+// Write a function that reverses an array of integers
+func reverseRules(values [][][]int) [][][]int {
+	result := make([][][]int, len(values))
+	for i, value := range values {
+		result[len(values)-i-1] = value
+	}
+	return result
+}
+
 func main() {
 	//Open the file
 	file, err := os.Open("data.txt")
@@ -69,7 +105,7 @@ func main() {
 	split := strings.Split(input, "\n\n")
 
 	//Parse a list of integers from a string
-	seeds := parseValues(split[0], `\d+`)
+	seeds := chunk(2)(parseValues(split[0], `\d+`))
 
 	rules := make([][][]int, 7)
 	rules[0] = chunk(3)(parseValues(split[1], `\d+`))
@@ -80,12 +116,11 @@ func main() {
 	rules[5] = chunk(3)(parseValues(split[6], `\d+`))
 	rules[6] = chunk(3)(parseValues(split[7], `\d+`))
 
-	//Iterate the list of seeds
-	minimumLocation := seeds[0]
-	for _, seed := range seeds {
-		seedCandidate := applyRules(rules, seed)
-		if seedCandidate < minimumLocation {
-			minimumLocation = seedCandidate
+	for i := 0; i > -1; i++ {
+		result := inRange(seeds, invertedApplyRules(reverseRules(rules), i))
+		if result {
+			fmt.Println(i)
+			break
 		}
 	}
 
@@ -93,6 +128,4 @@ func main() {
 	if err := scanner.Err(); err != nil {
 		log.Fatal(err)
 	}
-
-	fmt.Println(minimumLocation)
 }
